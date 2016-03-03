@@ -25,4 +25,51 @@ dependencies {
 }
 ```
 
+# API Calls
+
+### Configuration
+```
+public class AppCompatActivity {
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        FragmentRouter.init(this);          // FragmentRouter must use an AppCompatActivity
+    }
+
+}
+```
+
+### Navigation
+```
+FragmentRouter.navigateTo( int container, Fragment supportFragment );
+
+FragmentRouter.navigateBack( int container );
+
+FragmentRouter.navigateForward( int container );
+```
+
+### Listeners 
+```
+// adding FragmentChangeListener will give you the current fragment
+FragmentRouter.addFragmentChangeListener(new FragmentRouter.FragmentChangeListener() {
+    @Override
+    public void onFragmentChanged(Fragment fragment) {
+        Log.d("====>", fragment.toString());
+    }
+});
+```
+
+### Clearing Navigation
+```
+FragmentRouter.clearBackNav();      // will remove all back fragments
+
+FragmentRouter.clearForwardNav();   // will remove all forward fragments
+
+FragmentRouter.clearAllNav();       // will remove all navigation fragments, except the current fragment
+```
+
+
 The repo is open, feel free to contribute. 
