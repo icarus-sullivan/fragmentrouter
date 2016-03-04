@@ -46,14 +46,14 @@ public class FragmentRouter {
     }
 
     // API
-    public static void navigateTo( int container, Fragment fragment ) {
+    public synchronized static void navigateTo( int container, Fragment fragment ) {
         // add to the end of forward navigation
         forward.push( fragment );
         navigateForward(container);
     }
 
     // API
-    public static void navigateBack( int container ) {
+    public synchronized static void navigateBack( int container ) {
         if( back.size() > 0 ) {
             _ignoreFragmentManagerBackstack();
 
@@ -66,7 +66,7 @@ public class FragmentRouter {
     }
 
     // API
-    public static void navigateForward( int container ) {
+    public synchronized static void navigateForward( int container ) {
         if( forward.size() > 0 ) {
             _ignoreFragmentManagerBackstack();
 
@@ -95,12 +95,19 @@ public class FragmentRouter {
     }
 
     private static Fragment _pipeStacks( Stack<Fragment> s1, Stack<Fragment> s2 ) {
-        Fragment fragment = s1.pop();
-        s2.push(fragment);
-        return fragment;
+        if( !s1.isEmpty() )
+        {
+            Fragment fragment = s1.pop();
+            s2.push(fragment);
+            return fragment;
+        }
+        return null;
     }
 
     private static void _handleNavigation( int container, int animIn, int animOut ) {
+        if( current == null ) {
+            return;
+        }
         mAct.getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(animIn, animOut)
