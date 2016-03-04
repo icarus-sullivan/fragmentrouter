@@ -57,10 +57,7 @@ public class FragmentRouter {
         if( back.size() > 0 ) {
             _ignoreFragmentManagerBackstack();
 
-            Fragment check = _pipeStacks(back, forward);
-            // if the last popped fragment was already current, pop again
-            current = (_wasLast(check) ? _pipeStacks( back, forward ) : check);
-
+            current = _pipeStacks(back, forward);
             _handleNavigation( container, R.anim.enter_left, R.anim.exit_right );
         }
     }
