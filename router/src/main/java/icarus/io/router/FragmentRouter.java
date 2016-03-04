@@ -4,6 +4,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
 import java.util.Stack;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by chris sullivan on 3/3/16.
@@ -17,6 +19,8 @@ public class FragmentRouter {
     private static Fragment current = null;
 
     private static FragmentRouter ourInstance;
+
+    private static Lock lock = new ReentrantLock();
 
     private static FragmentChangeListener fragmentListener;
     public interface FragmentChangeListener {
@@ -46,24 +50,29 @@ public class FragmentRouter {
     }
 
     // API
-    public synchronized static void navigateTo( int container, Fragment fragment ) {
+    public static void navigateTo( int container, Fragment fragment ) {
         // add to the end of forward navigation
+        lock.lock();
         forward.push( fragment );
+        lock.unlock();
         navigateForward(container);
     }
 
     // API
-    public synchronized static void navigateBack( int container ) {
+    public static void navigateBack( int container ) {
         if( back.size() > 0 ) {
             _ignoreFragmentManagerBackstack();
 
-            current = _pipeStacks(back, forward);
+            Fragment check = _pipeStacks(back, forward);
+            // if the last popped fragment was already current, pop again
+            current = (_wasLast(check) ? _pipeStacks( back, forward ) : check);
+
             _handleNavigation( container, R.anim.enter_left, R.anim.exit_right );
         }
     }
 
     // API
-    public synchronized static void navigateForward( int container ) {
+    public static void navigateForward( int container ) {
         if( forward.size() > 0 ) {
             _ignoreFragmentManagerBackstack();
 
@@ -92,10 +101,12 @@ public class FragmentRouter {
     }
 
     private static Fragment _pipeStacks( Stack<Fragment> s1, Stack<Fragment> s2 ) {
-        if( !s1.isEmpty() )
+        if( s1.size() > 0 )
         {
+            lock.lock();
             Fragment fragment = s1.pop();
             s2.push(fragment);
+            lock.unlock();
             return fragment;
         }
         return null;
