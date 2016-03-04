@@ -1,4 +1,4 @@
-# fragmentrouter
+# FragmentRouter v1.0.4
 
 ### What is it?
 FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of default Java Stacks to handle the navigation, but still relies on FragmentManager under the hood.
@@ -21,7 +21,7 @@ Then within your apps build.gradle add the following dependency.
 
 ```
 dependencies {
-    compile 'com.github.icarus-sullivan:fragmentrouter:+'
+    compile 'com.github.icarus-sullivan:fragmentrouter:1.0.4'
 }
 ```
 
