@@ -134,6 +134,15 @@ public class FragmentRouter {
     public static void clearAllNav() {
         forward.clear();
         back.clear();
+
+        if( current != null ) {
+            mAct.getSupportFragmentManager()
+                    .beginTransaction()
+                    .hide( current )
+                    .commit();
+
+            if( fragmentListener != null ) fragmentListener.onFragmentChanged( null );
+        }
     }
 
     // API
