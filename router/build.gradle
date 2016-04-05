@@ -1,29 +1,5 @@
 apply plugin: 'com.android.library'
-
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'fragmentrouter'
-
-    publishedGroupId = 'com.github.icarus-sullivan'
-    libraryName = 'fragmentrouter'
-    artifact = 'fragmentrouter'
-
-    libraryDescription = 'FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of default Java Stacks to handle the navigation, but still relies on FragmentManager under the hood.'
-
-    siteUrl = 'https://github.com/icarus-sullivan/fragmentrouter'
-    gitUrl = 'https://github.com/icarus-sullivan/fragmentrouter.git'
-
-    libraryVersion = '1.0.4'
-
-    developerId = 'icarus-sullivan'
-    developerName = 'Chris Sullivan'
-    developerEmail = 'chrissullivan.dev@gmail.com'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 23
@@ -49,5 +25,62 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
 }
 
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name 'FragmentRouter'
+            description 'FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of default Java Stacks to handle the navigation, but still relies on FragmentManager under the hood.'
+            url 'https://github.com/icarus-sullivan/fragmentrouter'
+            inceptionYear '2016'
+
+            packaging 'aar'
+            groupId 'com.github.icarus-sullivan'
+            artifactId 'fragmentrouter'
+            version '1.0.4'
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            scm {
+                connection 'https://github.com/icarus-sullivan/fragmentrouter.git'
+                url 'https://github.com/icarus-sullivan/fragmentrouter'
+
+            }
+            developers {
+                developer {
+                    name 'Chris Sullivan'
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    user = properties.getProperty('bintray.user')
+    key = properties.getProperty('bintray.apikey')
+    dryRun = true
+    pkg {
+        repo = 'maven'
+        name = 'fragmentrouter'
+        userOrg = 'icarus-sullivan'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/icarus-sullivan/fragmentrouter.git'
+        version {
+            name = '1.0.4'
+            desc = 'FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of default Java Stacks to handle the navigation, but still relies on FragmentManager under the hood.'
+            released  = new Date()
+            vcsTag = '1.0.4'
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
+}
