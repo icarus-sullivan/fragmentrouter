@@ -1,5 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+group = 'com.github.icarus-sullivan'
+version = '1.0.4'
 
 android {
     compileSdkVersion 23
@@ -32,7 +36,6 @@ install {
             name 'FragmentRouter'
             description 'FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of default Java Stacks to handle the navigation, but still relies on FragmentManager under the hood.'
             url 'https://github.com/icarus-sullivan/fragmentrouter'
-            inceptionYear '2016'
 
             packaging 'aar'
             groupId 'com.github.icarus-sullivan'
@@ -54,6 +57,8 @@ install {
             developers {
                 developer {
                     name 'Chris Sullivan'
+                    id 'icarus-sullivan'
+                    email 'chrissullivan.dev@gmail.com'
                 }
             }
         }
@@ -65,11 +70,11 @@ bintray {
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     user = properties.getProperty('bintray.user')
     key = properties.getProperty('bintray.apikey')
-    dryRun = true
+    configurations = ['archives']
     pkg {
         repo = 'maven'
         name = 'fragmentrouter'
-        userOrg = 'icarus-sullivan'
+        userOrg = user
         licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/icarus-sullivan/fragmentrouter.git'
         version {
@@ -78,9 +83,32 @@ bintray {
             released  = new Date()
             vcsTag = '1.0.4'
         }
+        labels = ['aar', 'android', 'fragment', 'management']
+        publicDownloadNumbers = true
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.4'
-}
+
+//task sourcesJar(type: Jar) {
+//    from android.sourceSets.main.java.srcDirs
+//    classifier = 'sources'
+//}
+//
+//task javadoc(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
+//
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
+//
+//artifacts {
+//    archives javadocJar
+//    archives sourcesJar
+//}
+//
+//task findConventions << {
+//    println project.getConvention()
+//}
