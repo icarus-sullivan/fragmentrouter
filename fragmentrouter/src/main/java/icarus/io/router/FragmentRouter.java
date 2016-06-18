@@ -3,9 +3,7 @@ package icarus.io.router;
 import android.support.annotation.AnimRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
-import java.util.Stack;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,7 +31,7 @@ public class FragmentRouter {
 
     private FragmentRouter ourInstance;
 
-    private Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
     private FragmentChangeListener fragmentListener;
     public interface FragmentChangeListener {
@@ -66,7 +64,7 @@ public class FragmentRouter {
 
     // API
     public Fragment getCurrent() {
-        return _isInValid()  ? null : fragments.get(pos);
+        return pos < 0 || pos > fragments.size() - 1 ? null : fragments.get(pos);
     }
 
     // API
@@ -95,7 +93,7 @@ public class FragmentRouter {
 
     // API
     public void navigateBack( int container ) {
-        if( !_isInValid() ) {
+        if( pos > 0 ) {
             _ignoreFragmentManagerBackstack();
 
             pos--;
@@ -105,16 +103,12 @@ public class FragmentRouter {
 
     // API
     public void navigateForward( int container ) {
-        if( !_isInValid() ) {
+        if( pos < fragments.size() - 1 ) {
             _ignoreFragmentManagerBackstack();
 
             pos++;
             _handleNavigation( container, nForIn, nForOut );
         }
-    }
-
-    private boolean _isInValid() {
-        return pos < 0 || pos > fragments.size() - 1;
     }
 
     private void _ignoreFragmentManagerBackstack() throws NullPointerException {
@@ -163,16 +157,18 @@ public class FragmentRouter {
     }
 
     // API
-    public void clearForwardNav() {
+    public synchronized void clearForwardNav() {
         lock.lock();
-        for( int i = pos; i < fragments.size(); i++ ) {
-            fragments.remove(pos + 1);
+        int cut = fragments.size() - 1 - pos;
+        while( cut > 0 ) {
+            fragments.remove( pos + 1 );
+            cut--;
         }
         lock.unlock();
     }
 
     // API
-    public void clearBackNav() {
+    public synchronized void clearBackNav() {
         lock.lock();
         for( int i = 0; i < pos; i++ ) {
             fragments.remove(0);
