@@ -1,9 +1,11 @@
 package icarus.io.router;
 
+import android.support.annotation.AnimRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
 import java.util.Stack;
+import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -12,28 +14,44 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class FragmentRouter {
 
-    private static Stack<Fragment> back = new Stack<Fragment>();
-    private static Stack<Fragment> forward = new Stack<Fragment>();
+    /**
+     * Used to keep track of the Fragment stack, literally a vector with position
+     * sliding
+     */
+    private int pos = 0;
+    private Vector<Fragment> fragments = new Vector<>();
 
-    private static AppCompatActivity mAct;
-    private static Fragment current = null;
+    @AnimRes private int nBackIn = R.anim.enter_left;
+    @AnimRes private int nBackOut = R.anim.exit_right;
+    @AnimRes private int nForIn = R.anim.enter_right;
+    @AnimRes private int nForOut = R.anim.exit_left;
+    @AnimRes private int nPopIn = R.anim.enter_bottom;
+    @AnimRes private int nPopOut = R.anim.exit_top;
 
-    private static FragmentRouter ourInstance;
+    private AppCompatActivity mAct;
 
-    private static Lock lock = new ReentrantLock();
+    private FragmentRouter ourInstance;
 
-    private static FragmentChangeListener fragmentListener;
+    private Lock lock = new ReentrantLock();
+
+    private FragmentChangeListener fragmentListener;
     public interface FragmentChangeListener {
         void onFragmentChanged(Fragment current);
     }
 
-    public static FragmentRouter init( AppCompatActivity act ) {
-        ourInstance = new FragmentRouter( act );
-        return ourInstance;
+    public FragmentRouter(AppCompatActivity act) {
+        mAct = act;
     }
 
-    private FragmentRouter(AppCompatActivity act) {
-        mAct = act;
+    public void withAnimations(@AnimRes int navBackIn, @AnimRes int navBackOut,
+                               @AnimRes int navForwardIn, @AnimRes int navForwardOut,
+                               @AnimRes int navPopIn, @AnimRes int navPopOut ) {
+        this.nBackIn = navBackIn;
+        this.nBackOut = navBackOut;
+        this.nForIn = navForwardIn;
+        this.nForOut = navForwardOut;
+        this.nPopIn = navPopIn;
+        this.nPopOut = navPopOut;
     }
 
     /**
@@ -41,58 +59,60 @@ public class FragmentRouter {
      * a valid AppCompatActivity or else the methods will fail
      */
 
-    public static void addFragmentChangeListener( FragmentChangeListener listen ) {
+    public void addFragmentChangeListener( FragmentChangeListener listen ) {
         fragmentListener = listen;
     }
 
-    public static Fragment getCurrent() {
-        return current;
+    // API
+    public Fragment getCurrent() {
+        return pos < 0 || pos > fragments.size() - 1 ? null : fragments.get(pos);
     }
 
     // API
-    public static void navigateTo( int container, Fragment fragment ) {
+    public boolean canGoBack() {
+        return fragments.size() > 0 && pos > 0;
+    }
+
+    // API
+    public boolean canGoForward() {
+        return fragments.size() > 0 && pos < fragments.size() - 1;
+    }
+
+    // API
+    public void navigateTo( int container, Fragment fragment ) {
         // add to the end of forward navigation
         lock.lock();
-        forward.push( fragment );
+        if( !fragments.contains( fragment ) ) {
+            fragments.add( fragment );
+            pos = fragments.size() - 1;
+        } else {
+            pos = fragments.indexOf( fragment );
+        }
         lock.unlock();
-        navigateForward(container);
+        _handleNavigation( container, nPopIn, nPopOut );
     }
 
     // API
-    public static void navigateBack( int container ) {
-        if( back.size() > 0 ) {
+    public void navigateBack( int container ) {
+        if( pos > 0 ) {
             _ignoreFragmentManagerBackstack();
 
-            Fragment check = _pipeStacks(back, forward);
-            // if the last popped fragment was already current, pop again
-            current = (_wasLast(check) ? _pipeStacks( back, forward ) : check);
-
-            _handleNavigation( container, R.anim.enter_left, R.anim.exit_right );
+            pos--;
+            _handleNavigation( container, nBackIn, nBackOut );
         }
     }
 
     // API
-    public static void navigateForward( int container ) {
-        if( forward.size() > 0 ) {
+    public void navigateForward( int container ) {
+        if( pos < fragments.size() - 1 ) {
             _ignoreFragmentManagerBackstack();
 
-            Fragment check = _pipeStacks(forward, back);
-            // if the last popped fragment was already current, pop again
-            current = (_wasLast( check ) ? _pipeStacks(forward, back) : check);
-
-            _handleNavigation( container, R.anim.enter_right, R.anim.exit_left );
+            pos++;
+            _handleNavigation( container, nForIn, nForOut );
         }
     }
 
-    /**
-     * Internal calls that should not be modified, the _ prefix denotes that changing
-     * these methods may break the overall architecture of {@link FragmentRouter}
-     */
-    private static boolean _wasLast( Fragment frag ) {
-        return current == frag;
-    }
-
-    private static void _ignoreFragmentManagerBackstack() throws NullPointerException {
+    private void _ignoreFragmentManagerBackstack() throws NullPointerException {
         if( mAct == null ) {
             throw new NullPointerException("FragmentRouter must be initialized with a valid AppCompatActivity");
         }
@@ -100,20 +120,9 @@ public class FragmentRouter {
                 .popBackStack();
     }
 
-    private static Fragment _pipeStacks( Stack<Fragment> s1, Stack<Fragment> s2 ) {
-        if( s1.size() > 0 )
-        {
-            lock.lock();
-            Fragment fragment = s1.pop();
-            s2.push(fragment);
-            lock.unlock();
-            return fragment;
-        }
-        return null;
-    }
-
-    private static void _handleNavigation( int container, int animIn, int animOut ) {
-        if( current == null ) {
+    private void _handleNavigation( int container, int animIn, int animOut ) {
+        Fragment current = getCurrent();
+        if(  current == null ) {
             return;
         }
         mAct.getSupportFragmentManager()
@@ -131,10 +140,10 @@ public class FragmentRouter {
 
     // API -- note clearing both navs will not remove the current fragment but will only
     //        erase its navigation from the current fragments position
-    public static void clearAllNav() {
-        forward.clear();
-        back.clear();
+    public void clearAllNav() {
+        pos = -1;
 
+        Fragment current = getCurrent();
         if( current != null ) {
             mAct.getSupportFragmentManager()
                     .beginTransaction()
@@ -143,16 +152,23 @@ public class FragmentRouter {
 
             if( fragmentListener != null ) fragmentListener.onFragmentChanged( null );
         }
+
+        fragments.clear();
     }
 
     // API
-    public static void clearForwardNav() {
-        forward.clear();
+    public void clearForwardNav() {
+        for( int i = pos + 1; i < fragments.size(); i++ ) {
+            fragments.remove( i );
+        }
     }
 
     // API
-    public static void clearBackNav() {
-        back.clear();
+    public void clearBackNav() {
+        for( int i = 0; i < pos; i++ ) {
+            fragments.remove(0);
+        }
+        pos = 0;
     }
 
 }
