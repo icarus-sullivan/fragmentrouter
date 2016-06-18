@@ -81,11 +81,12 @@ public class FragmentRouter {
     public void navigateTo( int container, Fragment fragment ) {
         // add to the end of forward navigation
         lock.lock();
-        if( !fragments.contains( fragment ) ) {
+        int exist = _exists( fragment );
+        if( exist == -1 ) {
             fragments.add( fragment );
             pos = fragments.size() - 1;
         } else {
-            pos = fragments.indexOf( fragment );
+            pos = exist;
         }
         lock.unlock();
         _handleNavigation( container, nPopIn, nPopOut );
@@ -109,6 +110,16 @@ public class FragmentRouter {
             pos++;
             _handleNavigation( container, nForIn, nForOut );
         }
+    }
+
+    private synchronized int _exists( Fragment frag ) {
+        for( int i = 0; i < fragments.size(); i++ ) {
+            Fragment cur = fragments.get(i);
+            if( frag.getClass().isInstance( cur ) ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void _ignoreFragmentManagerBackstack() throws NullPointerException {
