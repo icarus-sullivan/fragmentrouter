@@ -1,3 +1,5 @@
+[ ![Download](https://api.bintray.com/packages/icarus-sullivan/maven/fragmentrouter/images/download.svg) ](https://bintray.com/icarus-sullivan/maven/fragmentrouter/_latestVersion)
+
 # FragmentRouter v1.0.5
 
 ### What is it?
@@ -18,7 +20,7 @@ Then within your apps build.gradle add the following dependency.
 
 ```
 dependencies {
-    compile 'com.github.icarus-sullivan:fragmentrouter:1.0.4'
+    compile 'com.github.icarus-sullivan:fragmentrouter:1.0.5'
 }
 ```
 
@@ -28,7 +30,7 @@ If you are using maven you can include the library with the following dependency
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>fragmentrouter</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <type>pom</type>
 </dependency>
 ```
