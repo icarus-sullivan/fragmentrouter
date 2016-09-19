@@ -3,6 +3,7 @@
 /local.properties
 /.idea
 /router/build
+/gradle
 
 .DS_Store
 /build
