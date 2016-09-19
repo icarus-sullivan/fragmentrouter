@@ -10,7 +10,7 @@ Add the follinowing gradle dependency.
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:fragmentrouter:1.0.7'
+    compile 'com.github.icarus-sullivan:fragmentrouter:1.0.8'
 }
 ```
 
@@ -20,7 +20,7 @@ If you are using maven you can include the library with the following dependency
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>fragmentrouter</artifactId>
-  <version>1.0.7</version>
+  <version>1.0.8</version>
   <type>pom</type>
 </dependency>
 ```
