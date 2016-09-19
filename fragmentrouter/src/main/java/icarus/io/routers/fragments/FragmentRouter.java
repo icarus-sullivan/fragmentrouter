@@ -197,7 +197,6 @@ public class FragmentRouter {
         int cut = fragments.size() - 1 - pos;
         while( cut > 0 ) {
             fragments.remove( pos + 1 );
-            fragments.remove( pos + 1 );
             cut--;
         }
         lock.unlock();
