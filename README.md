@@ -1,6 +1,6 @@
 [ ![Download](https://api.bintray.com/packages/icarus-sullivan/maven/fragmentrouter/images/download.svg) ](https://bintray.com/icarus-sullivan/maven/fragmentrouter/_latestVersion)
 
-# FragmentRouter v1.0.6
+# FragmentRouter
 
 ### What is it?
 FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of position based traversal to handle the navigation, but still relies on FragmentManager under the hood.
