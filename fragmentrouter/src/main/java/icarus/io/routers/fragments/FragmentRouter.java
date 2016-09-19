@@ -1,4 +1,4 @@
-package icarus.io.router;
+package icarus.io.routers.fragments;
 
 import android.support.annotation.AnimRes;
 import android.support.v4.app.Fragment;
@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import icarus.io.router.R;
 
 /**
  * Created by chris sullivan on 3/3/16.
@@ -39,10 +41,10 @@ public class FragmentRouter {
     }
 
     public FragmentRouter(AppCompatActivity act) {
-        mAct = act;
+        into( act );
     }
 
-    public void withAnimations(@AnimRes int navBackIn, @AnimRes int navBackOut,
+    public FragmentRouter withAnimations(@AnimRes int navBackIn, @AnimRes int navBackOut,
                                @AnimRes int navForwardIn, @AnimRes int navForwardOut,
                                @AnimRes int navPopIn, @AnimRes int navPopOut ) {
         this.nBackIn = navBackIn;
@@ -51,13 +53,19 @@ public class FragmentRouter {
         this.nForOut = navForwardOut;
         this.nPopIn = navPopIn;
         this.nPopOut = navPopOut;
+        return this;
+    }
+
+    public FragmentRouter into( AppCompatActivity act ) {
+        clearAllNav();
+        this.mAct = act;
+        return this;
     }
 
     /**
      * Accessible methods for navigations, fragmentRouter must have been initialzied with
      * a valid AppCompatActivity or else the methods will fail
      */
-
     public void addFragmentChangeListener( FragmentChangeListener listen ) {
         fragmentListener = listen;
     }
@@ -81,9 +89,25 @@ public class FragmentRouter {
     public void navigateTo( int container, Fragment fragment ) {
         // add to the end of forward navigation
         lock.lock();
-        int exist = _exists( fragment );
+        int exist = _exists( fragment.getClass() );
         if( exist == -1 ) {
             fragments.add( fragment );
+            pos = fragments.size() - 1;
+        } else {
+            pos = exist;
+        }
+        lock.unlock();
+        _handleNavigation( container, nPopIn, nPopOut );
+    }
+
+    // API
+    public void navigateTo( int container, Class<? extends Fragment> clz ) {
+        lock.lock();
+        int exist = _exists( clz );
+        if( exist == -1 ) {
+            // only create if it doesn't exits
+            Fragment f = Fragment.instantiate( mAct, clz.getCanonicalName() );
+            fragments.add( f );
             pos = fragments.size() - 1;
         } else {
             pos = exist;
@@ -112,10 +136,10 @@ public class FragmentRouter {
         }
     }
 
-    private synchronized int _exists( Fragment frag ) {
+    private synchronized int _exists( Class<? extends Fragment> frag ) {
         for( int i = 0; i < fragments.size(); i++ ) {
             Fragment cur = fragments.get(i);
-            if( frag.getClass().isInstance( cur ) ) {
+            if( cur.getClass().isAssignableFrom( frag ) ) {
                 return i;
             }
         }
@@ -172,6 +196,7 @@ public class FragmentRouter {
         lock.lock();
         int cut = fragments.size() - 1 - pos;
         while( cut > 0 ) {
+            fragments.remove( pos + 1 );
             fragments.remove( pos + 1 );
             cut--;
         }

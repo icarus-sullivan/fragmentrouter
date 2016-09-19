@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.github.icarus-sullivan'
-version = '1.0.6'
+version = '1.0.7'
 
 ext {
     CapitalName = 'FragmentRouter'
@@ -11,7 +11,7 @@ ext {
     SourceUrl = 'https://github.com/icarus-sullivan/fragmentrouter.git'
     Website = 'https://github.com/icarus-sullivan/fragmentrouter'
     Description = 'FragmentRouter is a simpler way to handle Fragment Navigation in Android projects. It operates like a Undo-Redo implementation making use of default position fragments to handle the navigation, but still relies on FragmentManager under the hood.'
-    Version = '1.0.6'
+    Version = '1.0.7'
     ArtifactId = 'fragmentrouter'
     Labels = ['aar', 'android', 'fragment', 'management']
 }
@@ -24,7 +24,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 1
-        versionName "1.0.6"
+        versionName "1.0.7"
     }
     buildTypes {
         release {
